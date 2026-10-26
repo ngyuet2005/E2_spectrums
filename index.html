@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="zh-HK" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>原子光譜與能階躍遷實驗室 | Atomic Spectra & Energy Levels Lab</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;800&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+  <!-- Three.js (r128) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- KaTeX for LaTeX Math Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* 大字體投影模式 (Projector XL Mode) */
+    body.projector-xl {
+      font-size: 112%;
+    }
+    body.projector-xl h1 { font-size: 1.85rem !important; }
+    body.projector-xl h2 { font-size: 1.55rem !important; }
+    body.projector-xl h3 { font-size: 1.35rem !important; }
+    body.projector-xl p, body.projector-xl span {
+      letter-spacing: 0.015em;
+    }
+    .math-formula {
+      font-family: 'Times New Roman', Times, serif;
+      font-style: italic;
+    }
+    .math-formula .roman {
+      font-style: normal;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+
+  <!-- ================= 頂部導航列 Header ================= -->
+  <header class="bg-slate-900/95 border-b-2 border-slate-800 px-4 lg:px-8 py-3.5 sticky top-0 z-50 backdrop-blur-md flex flex-wrap items-center justify-between gap-4 shadow-xl">
+    <!-- 左側：標題與分頁切換 -->
+    <div class="flex flex-wrap items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400 to-indigo-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-cyan-500/20">
+          <i class="fa-solid fa-atom"></i>
+        </div>
+        <div>
+          <h1 class="text-lg md:text-2xl font-black text-white tracking-tight">
+            原子光譜與能階實驗室 Atomic Spectra Lab
+          </h1>
+          <p class="text-xs md:text-sm text-slate-400 font-bold">
+            發射光譜 (Emission) vs 吸收光譜 (Absorption) &bull; 10 條光線散射比喻 (10-Ray Scattering)
+          </p>
+        </div>
+      </div>
+
+      <!-- 主分頁切換按鈕 -->
+      <div class="flex items-center bg-slate-950 p-1.5 rounded-2xl border-2 border-slate-800 gap-1.5">
+        <button id="tab-btn-analogy" class="px-4 py-2.5 rounded-xl text-sm md:text-base font-extrabold transition-all flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 shadow-lg shadow-amber-500/25">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> 1. 散射比喻 10-Ray Scattering
+        </button>
+        <button id="tab-btn-3d" class="px-4 py-2.5 rounded-xl text-sm md:text-base font-extrabold transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800/70">
+          <i class="fa-solid fa-cube"></i> 2. 3D 能階與光路 Bohr &amp; Setup
+        </button>
+      </div>
+    </div>
+
+    <!-- 右側：元素選擇 + 中英對照 + 投影輔助工具 -->
+    <div class="flex flex-wrap items-center gap-2.5">
+      <!-- 一鍵中英對照切換器 -->
+      <div class="flex items-center bg-slate-950 p-1 rounded-2xl border-2 border-cyan-500/40 shadow-inner">
+        <button data-lang="bi" class="lang-btn px-3 py-1.5 text-xs md:text-sm font-extrabold rounded-xl transition-all bg-gradient-to-r from-cyan-400 to-sky-500 text-slate-950 shadow">
+          中英對照
+        </button>
+        <button data-lang="zh" class="lang-btn px-3 py-1.5 text-xs md:text-sm font-extrabold rounded-xl transition-all text-slate-300 hover:text-white">
+          中
+        </button>
+        <button data-lang="en" class="lang-btn px-3 py-1.5 text-xs md:text-sm font-extrabold rounded-xl transition-all text-slate-300 hover:text-white">
+          EN
+        </button>
+      </div>
+
+      <!-- 元素選擇器 -->
+      <div class="flex items-center gap-1 bg-slate-950 p-1.5 rounded-2xl border-2 border-slate-800">
+        <span id="ui-elem-label" class="text-xs md:text-sm font-bold px-2 text-slate-400 hidden 2xl:inline">
+          元素 Element:
+        </span>
+        <button data-element="H" class="elem-btn px-3 py-1.5 text-sm md:text-base font-extrabold rounded-xl transition-all bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30">氫 H</button>
+        <button data-element="He" class="elem-btn px-3 py-1.5 text-sm md:text-base font-extrabold rounded-xl transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">氦 He</button>
+        <button data-element="Na" class="elem-btn px-3 py-1.5 text-sm md:text-base font-extrabold rounded-xl transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">鈉 Na</button>
+        <button data-element="Hg" class="elem-btn px-3 py-1.5 text-sm md:text-base font-extrabold rounded-xl transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">汞 Hg</button>
+      </div>
+
+      <!-- 大字體與全螢幕按鈕 -->
+      <div class="flex items-center gap-1.5">
+        <button id="btn-font-scale" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs md:text-sm transition flex items-center gap-1.5" title="切換超大字體模式">
+          <i class="fa-solid fa-text-height text-cyan-400"></i> <span id="ui-font-btn">大字 A+</span>
+        </button>
+        <button id="btn-fullscreen" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs md:text-sm transition flex items-center gap-1.5" title="全螢幕投影 Fullscreen">
+          <i class="fa-solid fa-expand text-amber-400"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= 主舞台工作區 (12欄寬屏佈局) ================= -->
+  <main class="flex-1 px-4 lg:px-8 py-5 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1920px] mx-auto w-full items-start">
+
+    <!-- 左側主互動舞台：7 Cols -->
+    <section class="lg:col-span-7 flex flex-col gap-5">
+
+      <!-- ==================== 分頁 1：10 條光線散射比喻 (預設顯示) ==================== -->
+      <div id="view-scattering-analogy" class="flex flex-col gap-5">
+        
+        <div class="bg-slate-900/95 rounded-3xl p-5 xl:p-6 border-2 border-slate-800 shadow-2xl flex flex-col gap-5">
+          <!-- 標題與大按鈕列 -->
+          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b-2 border-slate-800 pb-4">
+            <div>
+              <div class="flex items-center gap-2.5">
+                <span id="ui-analogy-badge" class="px-3 py-1 rounded-lg bg-amber-500/20 border border-amber-400/50 text-amber-300 font-extrabold text-xs md:text-sm">
+                  核心比喻 Key Analogy
+                </span>
+                <h2 id="ui-analogy-title" class="text-lg md:text-2xl font-black text-white">
+                  為什麼白光穿過蒸氣後，特定顏色會出現「黑線 (Dark Lines)」？
+                </h2>
+              </div>
+              <p id="ui-analogy-desc" class="text-sm md:text-base text-slate-300 mt-1.5 font-medium">
+                假設白光中<strong class="text-white underline decoration-cyan-400">每種顏色都有 10 條光線 (10 Rays per Color)</strong>筆直向前射出，看看穿過低溫蒸氣時發生什麼事：
+              </p>
+            </div>
+
+            <!-- 三大發射控制按鈕 (超大高對比) -->
+            <div class="flex flex-wrap gap-2 shrink-0">
+              <button id="btn-fire-nonabsorb" class="px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold bg-emerald-600 hover:bg-emerald-500 text-slate-950 transition flex items-center gap-1.5 shadow-lg shadow-emerald-600/25">
+                <i class="fa-solid fa-arrow-right-long"></i> <span id="ui-btn-nonabsorb">10 條非吸收光 (綠光 Non-absorbed)</span>
+              </button>
+              <button id="btn-fire-resonant" class="px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold bg-rose-600 hover:bg-rose-500 text-white transition flex items-center gap-1.5 shadow-lg shadow-rose-600/30 ring-2 ring-rose-400/50">
+                <i class="fa-solid fa-arrows-split-up-and-left"></i> <span id="ui-btn-resonant">10 條特徵吸收光 (Resonant)</span>
+              </button>
+              <button id="btn-fire-both" class="px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold bg-gradient-to-r from-amber-400 to-cyan-400 hover:opacity-95 text-slate-950 transition flex items-center gap-1.5 shadow-lg">
+                <i class="fa-solid fa-layer-group"></i> <span id="ui-btn-both">同時發射對比 (Compare Both)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 10條光線即時統計儀表板 (大字版置頂，不遮擋畫布) -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            <!-- 卡片1：入射光束 -->
+            <div class="bg-slate-950/90 border-2 border-slate-800 rounded-2xl px-4 py-3 flex items-center justify-between">
+              <div>
+                <div id="ui-stat1-title" class="text-xs md:text-sm font-bold text-slate-400">左方入射平行光束 Incident Rays</div>
+                <div class="text-base md:text-lg font-black text-white mt-0.5" id="stat-mode-label">特徵吸收光 (紅光)</div>
+              </div>
+              <div class="text-right font-mono shrink-0 ml-2">
+                <span class="text-2xl md:text-3xl font-black text-amber-400">10</span>
+                <span id="ui-stat1-unit" class="text-xs md:text-sm font-bold text-slate-400 block">條直行 Rays</span>
+              </div>
+            </div>
+
+            <!-- 卡片2：側面散射 -->
+            <div class="bg-slate-950/90 border-2 border-cyan-900/60 rounded-2xl px-4 py-3 flex items-center justify-between">
+              <div>
+                <div id="ui-stat2-title" class="text-xs md:text-sm font-bold text-cyan-400 flex items-center gap-1.5">
+                  <i class="fa-solid fa-arrows-up-down-left-right"></i> 氣室吸收後散射 Scattered (4π)
+                </div>
+                <div id="ui-stat2-sub" class="text-xs md:text-sm font-bold text-slate-300 mt-0.5">向四面八方重發 Re-emitted All Directions</div>
+              </div>
+              <div class="text-right font-mono shrink-0 ml-2">
+                <span id="hud-scatter-count" class="text-2xl md:text-3xl font-black text-cyan-300">8 / 10</span>
+                <span id="ui-stat2-unit" class="text-xs md:text-sm font-bold text-slate-400 block">條轉向 Deflected</span>
+              </div>
+            </div>
+
+            <!-- 卡片3：直達屏幕結果 -->
+            <div class="bg-slate-950/90 border-2 border-rose-800/70 rounded-2xl px-4 py-3 flex items-center justify-between" id="stat-forward-box">
+              <div>
+                <div id="ui-stat3-title" class="text-xs md:text-sm font-bold text-rose-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-bullseye"></i> 直達正前方屏幕 Direct to Screen
+                </div>
+                <div class="text-xs md:text-sm font-extrabold text-amber-300 mt-0.5" id="hud-conclusion">
+                  光度大減 ➔ 形成黑線 (Dark Line)!
+                </div>
+              </div>
+              <div class="text-right font-mono shrink-0 ml-2">
+                <span id="hud-forward-count" class="text-2xl md:text-3xl font-black text-rose-400">2 / 10</span>
+                <span id="ui-stat3-unit" class="text-xs md:text-sm font-bold text-slate-400 block">條直達 Arrived</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 互動粒子模擬大畫布 -->
+          <div class="relative bg-slate-950 rounded-2xl border-2 border-slate-800 overflow-hidden h-[410px] xl:h-[440px] shadow-inner">
+            <canvas id="analogyCanvas" class="w-full h-full block"></canvas>
+          </div>
+
+          <!-- 課堂雙欄大字對照總結 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-emerald-950/30 p-4 rounded-2xl border-2 border-emerald-700/50 flex flex-col gap-1.5">
+              <div id="ui-box-green-title" class="text-base md:text-lg font-black text-emerald-300 flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-emerald-400 inline-block shrink-0"></span>
+                非吸收顏色 Non-absorbed Color (hf ≠ ΔE)
+              </div>
+              <p id="ui-box-green-desc" class="text-slate-200 text-sm md:text-base leading-relaxed font-medium">
+                氣體原子不吸收，<strong class="text-emerald-300 font-black">10 條光線 ➔ 10 條全部筆直穿過 (All 10 pass straight through)</strong> 到達正前方屏幕，形成明亮的連續彩虹背景 (Bright Continuous Background)。
+              </p>
+            </div>
+
+            <div class="bg-rose-950/35 p-4 rounded-2xl border-2 border-rose-700/60 flex flex-col gap-1.5">
+              <div id="ui-box-red-title" class="text-base md:text-lg font-black text-rose-300 flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-rose-500 inline-block shrink-0"></span>
+                特徵吸收顏色 Absorbed Color (hf = ΔE)
+              </div>
+              <p id="ui-box-red-desc" class="text-slate-200 text-sm md:text-base leading-relaxed font-medium">
+                原子吸收光子後<strong class="text-amber-300 font-black">向四面八方隨機散射 (Scattered in all directions)</strong>！原本直行的 <strong class="text-rose-300 font-black">10 條光線驟減至 2 條</strong>，正前方強度大減，形成<strong class="text-white underline decoration-rose-400">吸收黑線 (Dark Absorption Line)</strong>！
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ==================== 分頁 2：3D 玻爾原子能階與高壓放電光路 ==================== -->
+      <div id="view-3d-model" class="hidden flex-col gap-5">
+
+        <!-- 上半部：實驗室光路對照 (高壓放電管 vs 白光蒸氣吸收) -->
+        <div class="bg-slate-900/95 rounded-3xl p-5 border-2 border-slate-800 shadow-2xl flex flex-col gap-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b-2 border-slate-800 pb-3.5">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-microscope text-cyan-400 text-xl"></i>
+              <h2 class="text-lg md:text-xl font-black text-white">
+                <span id="ui-setup-header">實驗光路 Experimental Setup：</span><span id="setup-title" class="text-cyan-300">高壓放電管 Discharge Tube (發射光譜 Emission)</span>
+              </h2>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button id="btn-mode-emission" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 ring-2 ring-indigo-400">
+                <i class="fa-solid fa-bolt-lightning text-yellow-300"></i> <span id="ui-btn-mode-em">高壓電激發氣體 (發射 Emission)</span>
+              </button>
+              <button id="btn-mode-absorption" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <i class="fa-solid fa-sun text-amber-400"></i> <span id="ui-btn-mode-ab">白光穿過冷蒸氣 (吸收 Absorption)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="relative bg-slate-950 rounded-2xl border-2 border-slate-800 overflow-hidden h-48">
+            <canvas id="schematicCanvas" class="w-full h-full block"></canvas>
+          </div>
+        </div>
+
+        <!-- 下半部：3D 玻爾原子模型 -->
+        <div class="bg-slate-900/95 rounded-3xl border-2 border-slate-800 shadow-2xl overflow-hidden flex flex-col">
+          <div class="px-5 py-3.5 bg-slate-900 border-b-2 border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <i class="fa-solid fa-circle-nodes text-cyan-400 text-xl"></i>
+              <h3 id="ui-bohr-title" class="text-base md:text-xl font-black text-white">3D 玻爾原子能階躍遷模型 (Bohr Atomic Model)</h3>
+              <span class="text-xs md:text-sm px-3 py-1 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-700 font-mono font-bold" id="current-atom-label">
+                氫原子 Hydrogen (¹H)
+              </span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <button id="btn-replay-transition" class="px-3.5 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-extrabold text-xs md:text-sm flex items-center gap-1.5 shadow">
+                <i class="fa-solid fa-play"></i> <span id="ui-btn-replay">重播躍遷 Replay Transition</span>
+              </button>
+              <button id="reset-cam-btn" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs md:text-sm font-bold transition">
+                <i class="fa-solid fa-rotate-left mr-1"></i><span id="ui-btn-resetcam">重置視角 Reset</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3D 視窗與能階資訊疊加 -->
+          <div id="three-container" class="relative w-full h-[380px] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 cursor-grab active:cursor-grabbing overflow-hidden">
+            <!-- 右上角大字能階狀態 HUD -->
+            <div class="absolute top-4 right-4 bg-slate-900/90 backdrop-blur-md border-2 border-slate-700 rounded-2xl p-4 text-xs md:text-sm space-y-2 pointer-events-none shadow-2xl min-w-[270px] z-10">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                <span id="ui-hud-orbit" class="text-slate-400 font-bold">目前軌道 Energy Level:</span>
+                <span id="electron-state-text" class="text-emerald-400 font-extrabold font-mono text-base md:text-lg">n = 2</span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span id="ui-hud-process" class="text-slate-400 font-bold shrink-0">物理過程 Process:</span>
+                <span id="transition-action-text" class="text-cyan-300 font-extrabold text-right">等待躍遷 Ready</span>
+              </div>
+              <div class="flex items-center justify-between pt-1 border-t border-slate-800">
+                <span id="ui-hud-lambda" class="text-slate-400 font-bold">光子波長 Wavelength (λ):</span>
+                <span id="active-lambda-text" class="text-yellow-300 font-black font-mono text-base md:text-lg">656.3 nm</span>
+              </div>
+            </div>
+
+            <!-- 左下角操作提示 -->
+            <div class="absolute bottom-3 left-4 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800 text-xs md:text-sm text-slate-300 font-medium pointer-events-none">
+              <i class="fa-solid fa-hand-pointer text-cyan-400 mr-1.5"></i><span id="ui-3d-hint">按住滑鼠拖曳 360° 旋轉軌道 • 滾輪縮放 (Drag to Rotate • Scroll to Zoom)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ================= 右側：三大光譜同步對照尺與公式記憶卡 (5 Cols) ================= -->
+    <section class="lg:col-span-5 flex flex-col gap-5">
+      
+      <!-- 三大光譜對比主面板 -->
+      <div class="bg-slate-900/95 rounded-3xl p-5 xl:p-6 border-2 border-slate-800 shadow-2xl flex flex-col gap-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-800 pb-3">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-sliders text-cyan-400 text-xl"></i>
+            <h2 id="ui-spec-header" class="text-lg md:text-2xl font-black text-white">三大光譜對照尺 Spectra Comparison</h2>
+          </div>
+          <span id="ui-spec-hint" class="text-xs px-2.5 py-1 rounded-xl bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 font-extrabold">
+            <i class="fa-solid fa-hand-pointer mr-1"></i>點擊譜線切換 Click Line to Select
+          </span>
+        </div>
+
+        <!-- 1. 連續光譜 (Continuous Spectrum) -->
+        <div class="space-y-1.5">
+          <div class="flex flex-wrap items-center justify-between gap-1">
+            <span id="ui-spec1-title" class="text-sm md:text-base font-extrabold text-slate-100 flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-amber-400 shadow shrink-0"></span>
+              1. 連續光譜 Continuous Spectrum (高溫白光 White Light)
+            </span>
+            <span id="ui-spec1-badge" class="text-xs font-bold text-slate-300 bg-slate-800 px-2.5 py-0.5 rounded-lg">
+              所有顏色齊全 All Wavelengths
+            </span>
+          </div>
+          <div class="relative h-11 rounded-xl overflow-hidden border-2 border-slate-700 shadow-lg">
+            <div id="spectrum-continuous" class="w-full h-full"></div>
+          </div>
+        </div>
+
+        <!-- 2. 發射光譜 (Emission Spectrum) -->
+        <div class="space-y-1.5">
+          <div class="flex flex-wrap items-center justify-between gap-1">
+            <span id="ui-spec2-title" class="text-sm md:text-base font-extrabold text-cyan-300 flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee] shrink-0"></span>
+              2. 發射光譜 Line Emission Spectrum (高壓放電管 Hot Gas)
+            </span>
+            <span id="ui-spec2-badge" class="text-xs font-extrabold text-cyan-300 bg-cyan-950/90 border border-cyan-700/60 px-2.5 py-0.5 rounded-lg">
+              暗底亮線 Bright Lines on Dark
+            </span>
+          </div>
+          <div id="emission-bar-container" class="relative h-13 bg-black rounded-xl overflow-hidden border-2 border-slate-600 shadow-inner cursor-pointer hover:border-cyan-400 transition" style="height: 52px;">
+            <div id="emission-spectrum-lines" class="absolute inset-0 pointer-events-none"></div>
+          </div>
+        </div>
+
+        <!-- 3. 吸收光譜 (Absorption Spectrum) -->
+        <div class="space-y-1.5">
+          <div class="flex flex-wrap items-center justify-between gap-1">
+            <span id="ui-spec3-title" class="text-sm md:text-base font-extrabold text-amber-300 flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_10px_#f43f5e] shrink-0"></span>
+              3. 吸收光譜 Line Absorption Spectrum (白光穿過冷氣體 Cold Gas)
+            </span>
+            <span id="ui-spec3-badge" class="text-xs font-extrabold text-amber-300 bg-amber-950/80 border border-amber-700/60 px-2.5 py-0.5 rounded-lg">
+              彩底黑線 Dark Lines on Rainbow
+            </span>
+          </div>
+          <div id="absorption-bar-container" class="relative rounded-xl overflow-hidden border-2 border-slate-600 shadow-inner cursor-pointer hover:border-amber-400 transition" style="height: 52px;">
+            <div id="spectrum-absorption-bg" class="w-full h-full"></div>
+            <div id="absorption-spectrum-lines" class="absolute inset-0 pointer-events-none"></div>
+          </div>
+        </div>
+
+        <!-- 波長刻度尺 -->
+        <div id="ui-wavelength-scale" class="flex justify-between items-center text-xs text-slate-300 font-mono font-bold border-t-2 border-slate-800 pt-2 px-1">
+          <span>380 nm (紫 Violet)</span>
+          <span>450 nm (藍 Blue)</span>
+          <span>530 nm (綠 Green)</span>
+          <span>600 nm (橙 Orange)</span>
+          <span>750 nm (紅 Red)</span>
+        </div>
+
+        <!-- 特徵譜線大按鈕選擇區 -->
+        <div class="space-y-2 pt-1">
+          <div id="ui-quick-line-title" class="text-xs md:text-sm text-slate-300 font-extrabold flex items-center gap-1.5">
+            <i class="fa-solid fa-fingerprint text-cyan-400"></i> 點擊切換該元素的特徵譜線 Select Characteristic Spectral Line:
+          </div>
+          <div id="spectral-quick-buttons" class="grid grid-cols-2 gap-2">
+            <!-- JS 動態生成大按鈕 -->
+          </div>
+        </div>
+
+        <!-- 當前選中譜線：大字物理參數儀表板 -->
+        <div class="bg-slate-950 rounded-2xl p-4 border-2 border-cyan-800/60 shadow-xl flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span id="ui-param-header" class="text-xs md:text-sm font-extrabold text-cyan-300 flex items-center gap-2">
+              <i class="fa-solid fa-crosshairs text-cyan-400"></i> 當前選中譜線參數 Selected Line Data
+            </span>
+            <span id="spectral-color-badge" class="px-3 py-1 rounded-lg text-xs md:text-sm font-mono font-black text-slate-950 bg-red-500 shadow">
+              H-α (656.3 nm)
+            </span>
+          </div>
+          <div class="grid grid-cols-3 gap-2.5 text-center font-mono">
+            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+              <span id="ui-param-wl" class="text-slate-400 font-sans font-bold block text-xs mb-1">波長 Wavelength (λ)</span>
+              <span id="detail-wavelength" class="text-white font-black text-base md:text-lg">656.3 nm</span>
+            </div>
+            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+              <span id="ui-param-de" class="text-slate-400 font-sans font-bold block text-xs mb-1">光子能量 Energy (ΔE)</span>
+              <span id="detail-energy" class="text-cyan-300 font-black text-base md:text-lg">1.89 eV</span>
+            </div>
+            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+              <span id="ui-param-tr" class="text-slate-400 font-sans font-bold block text-xs mb-1">能階躍遷 Transition</span>
+              <span id="detail-transition" class="text-amber-300 font-black text-base md:text-lg">n=3 ↔ n=2</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= 教學記憶口訣與正規 LaTeX 公式卡 ================= -->
+      <div class="bg-gradient-to-br from-slate-900 via-indigo-950/60 to-slate-900 rounded-3xl p-5 xl:p-6 border-2 border-indigo-500/40 shadow-2xl space-y-4">
+        <div class="flex items-center gap-2.5">
+          <span class="w-9 h-9 rounded-xl bg-yellow-400/20 border border-yellow-400/50 flex items-center justify-center text-yellow-300 text-lg shrink-0">
+            <i class="fa-solid fa-lightbulb"></i>
+          </span>
+          <h3 id="ui-memo-title" class="text-base md:text-xl font-black text-white tracking-wide">
+            課堂核心總結：為什麼亮線與黑線位置完全相同？
+          </h3>
+        </div>
+
+        <!-- 清晰無亂碼的對照條列 -->
+        <div class="space-y-3 text-sm md:text-base leading-relaxed text-slate-200 font-medium">
+          <div class="flex items-start gap-2.5 bg-slate-950/60 p-3.5 rounded-2xl border border-cyan-500/30">
+            <span id="ui-memo-em-tag" class="px-2.5 py-0.5 rounded-md bg-cyan-500 text-slate-950 font-black text-xs md:text-sm shrink-0 mt-0.5">發射 Emission</span>
+            <p id="ui-memo-em-desc">
+              高壓電激發使電子「<strong class="text-white">由高能階跌回低能階 (High ➔ Low Level)</strong>」，向外釋放特定能量光子
+              <span class="inline-flex items-center px-2 py-0.5 mx-1 rounded bg-cyan-500/20 text-cyan-300 font-black">➔ 暗底出亮線 (Bright Lines)</span>
+            </p>
+          </div>
+
+          <div class="flex items-start gap-2.5 bg-slate-950/60 p-3.5 rounded-2xl border border-amber-500/30">
+            <span id="ui-memo-ab-tag" class="px-2.5 py-0.5 rounded-md bg-amber-400 text-slate-950 font-black text-xs md:text-sm shrink-0 mt-0.5">吸收 Absorption</span>
+            <p id="ui-memo-ab-desc">
+              電子「<strong class="text-white">由低能階跳上高能階 (Low ➔ High Level)</strong>」，吸收特定能量光子並向四周散射，直行光由 10 條減至 2 條
+              <span class="inline-flex items-center px-2 py-0.5 mx-1 rounded bg-amber-500/20 text-amber-300 font-black">➔ 彩底出黑線 (Dark Lines)</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- 正規數學公式展示盒 -->
+        <div class="p-4 rounded-2xl bg-slate-950 border-2 border-emerald-500/40 shadow-inner flex flex-col items-center justify-center gap-2 text-center">
+          <div id="ui-formula-label" class="text-xs md:text-sm font-bold text-emerald-400 tracking-wider uppercase">
+            能階差與光子波長公式 (Photon Energy &amp; Wavelength)
+          </div>
+
+          <div id="katex-formula-box" class="text-xl md:text-2xl text-white py-1 font-serif">
+            <span class="math-formula">
+              &Delta;E = E<sub><span class="roman">high</span></sub> &minus; E<sub><span class="roman">low</span></sub> = <span class="roman">h</span> &cdot; f = 
+              <span class="inline-flex flex-col items-center align-middle mx-1">
+                <span class="border-b border-white px-2 leading-tight"><span class="roman">h &cdot; c</span></span>
+                <span class="px-2 leading-tight">&lambda;</span>
+              </span>
+            </span>
+          </div>
+
+          <p id="ui-formula-footer" class="text-xs md:text-sm text-emerald-300 font-bold">
+            因為同一種元素的能階差 <span class="font-serif italic font-black text-white">&Delta;E</span> 固定 (Discrete Energy Levels)，所以發射亮線與吸收黑線的波長 <span class="font-serif italic font-black text-white">&lambda;</span> 必然一模一樣！
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 底部精簡資訊列 -->
+  <footer class="py-3 px-6 text-center text-xs md:text-sm text-slate-400 border-t border-slate-900 bg-slate-950 flex flex-wrap justify-between items-center gap-2">
+    <span id="ui-footer-left">物理科互動教學系統 • 原子光譜與能階特徵 (Emission &amp; Absorption Spectra)</span>
+    <span id="ui-footer-right">提示：點擊上方「中英對照 / 中 / EN」或「大字 A+」可即時切換語言與字體大小</span>
+  </footer>
+
+  <!-- ================= 核心互動腳本 ================= -->
+  <script>
+    /* ==========================================================================
+       0. 語言切換系統 (中英對照 bi / 繁體中文 zh / English en) + KaTeX 公式渲染
+       ========================================================================== */
+    let currentLang = "bi"; // 預設「中英對照」方便香港課堂教學
+
+    function L(zhText, enText, biText) {
+      if (currentLang === "zh") return zhText;
+      if (currentLang === "en") return enText;
+      return biText !== undefined ? biText : `${zhText} ${enText}`;
+    }
+
+    function renderMathFormulas() {
+      const formulaBox = document.getElementById('katex-formula-box');
+      if (window.katex && formulaBox) {
+        try {
+          const subHigh = currentLang === "zh" ? "\\text{高}" : (currentLang === "en" ? "\\text{high}" : "\\text{高/high}");
+          const subLow = currentLang === "zh" ? "\\text{低}" : (currentLang === "en" ? "\\text{低/low}" : "\\text{低/low}");
+          katex.render(
+            `\\Delta E = E_{${subHigh}} - E_{${subLow}} = h f = \\frac{h c}{\\lambda}`,
+            formulaBox,
+            { throwOnError: false, displayMode: true }
+          );
+        } catch (err) {
+          // 保留內建 HTML 數學結構
+        }
+      }
+    }
+
+    // 大字體模式切換
+    const btnFontScale = document.getElementById('btn-font-scale');
+    let isLargeFont = false;
+    btnFontScale.addEventListener('click', () => {
+      isLargeFont = !isLargeFont;
+      document.body.classList.toggle('projector-xl', isLargeFont);
+      btnFontScale.className = isLargeFont
+        ? 'px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 font-extrabold text-xs md:text-sm transition flex items-center gap-1.5 shadow-lg shadow-cyan-500/30'
+        : 'px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs md:text-sm transition flex items-center gap-1.5';
+      setTimeout(() => {
+        resizeAnalogyCanvas();
+        resizeSchematic();
+      }, 50);
+    });
+
+    // 全螢幕切換
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    /* ==========================================================================
+       1. 元素與特徵譜線資料庫 (支援中英雙語名稱)
+       ========================================================================== */
+    const ELEMENTS_DATA = {
+      H: {
+        zhName: "氫原子",
+        enName: "Hydrogen",
+        btnZh: "氫 H",
+        btnEn: "H",
+        symbol: "¹H",
+        lines: [
+          { zh: "H-α 紅線", en: "H-α Red", wavelength: 656.3, color: "#ff2e2e", fromN: 3, toN: 2, energy: 1.89 },
+          { zh: "H-β 青線", en: "H-β Cyan", wavelength: 486.1, color: "#00e5ff", fromN: 4, toN: 2, energy: 2.55 },
+          { zh: "H-γ 藍線", en: "H-γ Blue", wavelength: 434.0, color: "#4d7cff", fromN: 5, toN: 2, energy: 2.86 },
+          { zh: "H-δ 紫線", en: "H-δ Violet", wavelength: 410.2, color: "#a855f7", fromN: 6, toN: 2, energy: 3.02 }
+        ]
+      },
+      He: {
+        zhName: "氦原子",
+        enName: "Helium",
+        btnZh: "氦 He",
+        btnEn: "He",
+        symbol: "⁴He",
+        lines: [
+          { zh: "He 紅線", en: "He Red", wavelength: 667.8, color: "#ff3333", fromN: 4, toN: 2, energy: 1.86 },
+          { zh: "He 黃線", en: "He Yellow", wavelength: 587.6, color: "#ffd500", fromN: 3, toN: 2, energy: 2.11 },
+          { zh: "He 綠線", en: "He Green", wavelength: 501.6, color: "#00ff80", fromN: 4, toN: 2, energy: 2.47 },
+          { zh: "He 藍線", en: "He Blue", wavelength: 447.1, color: "#3b82f6", fromN: 5, toN: 2, energy: 2.77 }
+        ]
+      },
+      Na: {
+        zhName: "鈉原子",
+        enName: "Sodium",
+        btnZh: "鈉 Na",
+        btnEn: "Na",
+        symbol: "²³Na",
+        lines: [
+          { zh: "Na-D2 雙黃線", en: "Na-D2 Doublet", wavelength: 589.0, color: "#ffbe00", fromN: 3, toN: 2, energy: 2.10 },
+          { zh: "Na-D1 雙黃線", en: "Na-D1 Doublet", wavelength: 589.6, color: "#ffa200", fromN: 3, toN: 2, energy: 2.10 },
+          { zh: "Na 黃綠線", en: "Na Green", wavelength: 568.8, color: "#90ff00", fromN: 4, toN: 2, energy: 2.18 },
+          { zh: "Na 青藍線", en: "Na Cyan", wavelength: 498.2, color: "#00f0ff", fromN: 5, toN: 2, energy: 2.49 }
+        ]
+      },
+      Hg: {
+        zhName: "汞原子",
+        enName: "Mercury",
+        btnZh: "汞 Hg",
+        btnEn: "Hg",
+        symbol: "²⁰¹Hg",
+        lines: [
+          { zh: "Hg 橙黃線", en: "Hg Yellow", wavelength: 579.1, color: "#ffb300", fromN: 4, toN: 2, energy: 2.14 },
+          { zh: "Hg 亮綠線", en: "Hg Green", wavelength: 546.1, color: "#00ff66", fromN: 3, toN: 2, energy: 2.27 },
+          { zh: "Hg 藍線", en: "Hg Blue", wavelength: 435.8, color: "#3b82f6", fromN: 4, toN: 2, energy: 2.85 },
+          { zh: "Hg 紫線", en: "Hg Violet", wavelength: 404.7, color: "#a855f7", fromN: 5, toN: 2, energy: 3.06 }
+        ]
+      }
+    };
+
+    function getLineDisplayName(line) {
+      return L(line.zh, line.en, `${line.zh} ${line.en.split(' ').pop()}`);
+    }
+
+    function getElemDisplayName(elem) {
+      return L(elem.zhName, elem.enName, `${elem.zhName} ${elem.enName}`);
+    }
+
+    let currentElementKey = "H";
+    let currentMode = "emission";
+    let selectedLineIndex = 0;
+
+    // 波長轉 RGB
+    function nmToRGB(wavelength) {
+      let r = 0, g = 0, b = 0;
+      if (wavelength >= 380 && wavelength < 440) {
+        r = -(wavelength - 440) / (440 - 380);
+        b = 1;
+      } else if (wavelength >= 440 && wavelength < 490) {
+        g = (wavelength - 440) / (490 - 440);
+        b = 1;
+      } else if (wavelength >= 490 && wavelength < 510) {
+        g = 1;
+        b = -(wavelength - 510) / (510 - 490);
+      } else if (wavelength >= 510 && wavelength < 580) {
+        r = (wavelength - 510) / (580 - 510);
+        g = 1;
+      } else if (wavelength >= 580 && wavelength < 645) {
+        r = 1;
+        g = -(wavelength - 645) / (645 - 580);
+      } else if (wavelength >= 645 && wavelength <= 750) {
+        r = 1;
+      }
+      let factor = 1.0;
+      if (wavelength >= 380 && wavelength < 420) {
+        factor = 0.35 + 0.65 * (wavelength - 380) / (420 - 380);
+      } else if (wavelength >= 700 && wavelength <= 750) {
+        factor = 0.35 + 0.65 * (750 - wavelength) / (750 - 700);
+      }
+      return `rgb(${Math.round(r * factor * 255)}, ${Math.round(g * factor * 255)}, ${Math.round(b * factor * 255)})`;
+    }
+
+    function generateRainbowGradient() {
+      const stops = [];
+      for (let wl = 380; wl <= 750; wl += 10) {
+        const percent = ((wl - 380) / (750 - 380)) * 100;
+        stops.push(`${nmToRGB(wl)} ${percent.toFixed(1)}%`);
+      }
+      return `linear-gradient(to right, ${stops.join(', ')})`;
+    }
+
+    const rainbowCSS = generateRainbowGradient();
+    document.getElementById('spectrum-continuous').style.background = rainbowCSS;
+    document.getElementById('spectrum-absorption-bg').style.background = rainbowCSS;
+
+    /* ==========================================================================
+       2. 核心比喻：10 條光線散射模擬 (修正所有文字出界與爆框問題！)
+       ========================================================================== */
+    const analogyCanvas = document.getElementById('analogyCanvas');
+    const anaCtx = analogyCanvas.getContext('2d');
+
+    function resizeAnalogyCanvas() {
+      if (!analogyCanvas || analogyCanvas.clientWidth === 0) return;
+      const dpr = window.devicePixelRatio || 1;
+      analogyCanvas.width = analogyCanvas.clientWidth * dpr;
+      analogyCanvas.height = analogyCanvas.clientHeight * dpr;
+      anaCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resizeAnalogyCanvas);
+    resizeAnalogyCanvas();
+
+    let rays = [];
+    let currentRayMode = "both"; // 預設直接展示雙光束同屏對比，最直觀
+
+    // 氣室內的原子陣列
+    const gasAtoms = [];
+    for (let i = 0; i < 18; i++) {
+      gasAtoms.push({
+        col: i % 6,
+        row: Math.floor(i / 6),
+        pulse: Math.random() * Math.PI * 2,
+        flashTimer: 0,
+        flashColor: '#ff3344'
+      });
+    }
+
+    class RayParticle {
+      constructor(index, isResonant, startX, startY, colorHex) {
+        this.index = index;
+        this.isResonant = isResonant;
+        this.x = startX;
+        this.y = startY;
+        this.speed = 4.0;
+        this.color = colorHex;
+        this.scattered = false;
+        this.vx = this.speed;
+        this.vy = 0;
+        this.alive = true;
+        // 10 條共振光線中：只有第 2 與第 7 條 (共 2 條) 直達正前方，其餘 8 條被氣室吸收並向四周散射
+        this.willScatter = isResonant && (index !== 2 && index !== 7);
+        this.scatterTriggerRatio = 0.18 + (index % 5) * 0.15;
+      }
+
+      update(chamberLeft, chamberRight, stopX) {
+        if (!this.alive) return;
+
+        const triggerX = chamberLeft + (chamberRight - chamberLeft) * this.scatterTriggerRatio;
+
+        if (this.willScatter && !this.scattered && this.x >= triggerX) {
+          this.scattered = true;
+          const scatterAngles = [
+            -Math.PI / 2,      // 正上 (往 90° 探測器)
+            Math.PI / 2,       // 正下
+            -Math.PI * 0.44,   // 上偏右
+            -Math.PI * 0.56,   // 上偏左
+            Math.PI * 0.42,    // 下偏右
+            -Math.PI * 0.72,   // 斜後上
+            Math.PI * 0.68,    // 斜後下
+            -Math.PI * 0.36,   // 斜前上
+            Math.PI * 0.52,
+            -Math.PI * 0.48
+          ];
+          const ang = scatterAngles[this.index % scatterAngles.length];
+          this.vx = Math.cos(ang) * this.speed;
+          this.vy = Math.sin(ang) * this.speed;
+
+          const atomIdx = this.index % gasAtoms.length;
+          gasAtoms[atomIdx].flashTimer = 18;
+          gasAtoms[atomIdx].flashColor = this.color;
+        }
+
+        this.x += this.vx;
+        this.y += this.vy;
+
+        const w = analogyCanvas.clientWidth;
+        const h = analogyCanvas.clientHeight;
+        // 直行光到達屏幕即吸收停止，避免穿透到右方文字標籤區
+        if (!this.scattered && this.x >= stopX) {
+          this.alive = false;
+        }
+        if (this.x > w + 30 || this.x < -40 || this.y > h + 30 || this.y < -30) {
+          this.alive = false;
+        }
+      }
+
+      draw(ctx) {
+        if (!this.alive) return;
+        ctx.save();
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 11;
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x - this.vx * 5, this.y - this.vy * 5);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function fireTenRays(mode) {
+      rays = [];
+      currentRayMode = mode;
+
+      const activeLine = ELEMENTS_DATA[currentElementKey].lines[selectedLineIndex] || ELEMENTS_DATA[currentElementKey].lines[0];
+      const resonantColor = activeLine.color;
+      const nonAbsorbColor = "#10b981"; // 綠光 530nm
+
+      const h = analogyCanvas.clientHeight || 420;
+      const chamberH = Math.min(205, h * 0.52);
+      const topY = h / 2 - chamberH / 2 + 20;
+      const spacing = (chamberH - 40) / 9;
+
+      if (mode === "nonabsorb") {
+        for (let i = 0; i < 10; i++) {
+          rays.push(new RayParticle(i, false, 70 - i * 14, topY + i * spacing, nonAbsorbColor));
+        }
+      } else if (mode === "resonant") {
+        for (let i = 0; i < 10; i++) {
+          rays.push(new RayParticle(i, true, 70 - i * 14, topY + i * spacing, resonantColor));
+        }
+      } else if (mode === "both") {
+        for (let i = 0; i < 10; i++) {
+          rays.push(new RayParticle(i, false, 72 - i * 15, topY + i * spacing - 2.5, nonAbsorbColor));
+          rays.push(new RayParticle(i, true, 62 - i * 15, topY + i * spacing + 2.5, resonantColor));
+        }
+      }
+
+      updateAnalogyHUD(mode, activeLine);
+    }
+
+    function updateAnalogyHUD(mode, activeLine) {
+      const modeLabel = document.getElementById('stat-mode-label');
+      const scatterEl = document.getElementById('hud-scatter-count');
+      const forwardEl = document.getElementById('hud-forward-count');
+      const conclusionEl = document.getElementById('hud-conclusion');
+      const forwardBox = document.getElementById('stat-forward-box');
+
+      if (mode === "nonabsorb") {
+        modeLabel.innerHTML = `<span class="text-emerald-400">${L("非吸收光 (綠光 530nm)", "Non-absorbed (530nm)", "非吸收綠光 Non-absorbed")}</span>`;
+        scatterEl.textContent = "0 / 10";
+        scatterEl.className = "text-2xl md:text-3xl font-black text-slate-500";
+        forwardEl.textContent = "10 / 10";
+        forwardEl.className = "text-2xl md:text-3xl font-black text-emerald-400";
+        conclusionEl.innerHTML = `<span class="text-emerald-300">${L("10 條全數直達 ➔ 屏幕明亮！", "All 10 arrive ➔ Bright!", "10條全到 ➔ 明亮 Bright!")}</span>`;
+        forwardBox.className = "bg-slate-950/90 border-2 border-emerald-600/80 rounded-2xl px-4 py-3 flex items-center justify-between";
+      } else if (mode === "resonant") {
+        modeLabel.innerHTML = `<span style="color:${activeLine.color}">${getLineDisplayName(activeLine)} (${activeLine.wavelength}nm)</span>`;
+        scatterEl.textContent = "8 / 10";
+        scatterEl.className = "text-2xl md:text-3xl font-black text-cyan-300";
+        forwardEl.textContent = "2 / 10";
+        forwardEl.className = "text-2xl md:text-3xl font-black text-rose-400";
+        conclusionEl.innerHTML = `<span class="text-amber-300">${L("直行光驟減 ➔ 出現黑線！", "Intensity drops ➔ Dark Line!", "僅2條直達 ➔ 黑線 Dark Line!")}</span>`;
+        forwardBox.className = "bg-slate-950/90 border-2 border-rose-600/80 rounded-2xl px-4 py-3 flex items-center justify-between";
+      } else {
+        modeLabel.innerHTML = `<span class="text-amber-300">${L("白光混合 (10綠 + 10特徵光)", "Mixed (10 Green + 10 Resonant)", "雙光束對比 (10綠 + 10特徵)")}</span>`;
+        scatterEl.textContent = L("綠0 / 特8", "G:0 / R:8", "綠0 / 特8");
+        scatterEl.className = "text-xl md:text-2xl font-black text-cyan-300";
+        forwardEl.textContent = L("綠10 / 特2", "G:10 / R:2", "綠10 / 特2");
+        forwardEl.className = "text-xl md:text-2xl font-black text-amber-300";
+        conclusionEl.innerHTML = `<span class="text-amber-300">${L("綠光全亮 vs 特徵光變暗成黑線！", "Green Bright vs Resonant Dark Line!", "10條全亮 vs 2條變暗成黑線！")}</span>`;
+        forwardBox.className = "bg-slate-950/90 border-2 border-amber-500/80 rounded-2xl px-4 py-3 flex items-center justify-between";
+      }
+    }
+
+    document.getElementById('btn-fire-nonabsorb').addEventListener('click', () => fireTenRays("nonabsorb"));
+    document.getElementById('btn-fire-resonant').addEventListener('click', () => fireTenRays("resonant"));
+    document.getElementById('btn-fire-both').addEventListener('click', () => fireTenRays("both"));
+
+    // 輔助繪圖函數：自適應文字寬度的圓角標籤盒 (保證文字絕不爆框或出界)
+    function drawAutoBadge(ctx, text, anchorX, centerY, options = {}) {
+      const {
+        align = 'center', // 'center' | 'left' | 'right'
+        font = '800 13px "Noto Sans TC"',
+        textColor = '#f8fafc',
+        bgColor = 'rgba(15, 23, 42, 0.92)',
+        borderColor = '#38bdf8',
+        paddingX = 12,
+        height = 30,
+        radius = 8,
+        canvasWidth = 800
+      } = options;
+
+      ctx.save();
+      ctx.font = font;
+      const textMetrics = ctx.measureText(text);
+      const boxW = textMetrics.width + paddingX * 2;
+
+      let boxX = anchorX;
+      if (align === 'center') boxX = anchorX - boxW / 2;
+      else if (align === 'right') boxX = anchorX - boxW;
+
+      // 強制限制在畫布安全邊界 [10, canvasWidth - 10] 內，徹底防止出界！
+      if (boxX < 10) boxX = 10;
+      if (boxX + boxW > canvasWidth - 10) boxX = canvasWidth - 10 - boxW;
+
+      const boxY = centerY - height / 2;
+
+      ctx.fillStyle = bgColor;
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.roundRect(boxX, boxY, boxW, height, radius);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, boxX + boxW / 2, centerY + 1);
+      ctx.restore();
+    }
+
+    let autoFireCooldown = 0;
+
+    function renderAnalogyLoop() {
+      const w = analogyCanvas.clientWidth;
+      const h = analogyCanvas.clientHeight;
+      if (w > 0 && h > 0) {
+        anaCtx.clearRect(0, 0, w, h);
+
+        // 重新規劃水平比例：將氣室、狹縫與屏幕適度左移，預留右側 24% 寬度給標籤，絕不出界！
+        const sourceBoxX = 14;
+        const sourceBoxW = Math.max(88, Math.min(110, w * 0.13));
+        const chamberLeft = sourceBoxX + sourceBoxW + Math.max(18, w * 0.03);
+        const chamberRight = w * 0.54;
+        const chamberW = Math.max(140, chamberRight - chamberLeft);
+        const chamberH = Math.min(205, h * 0.52);
+        const chamberTop = h / 2 - chamberH / 2 + 8;
+
+        const slitX = w * 0.63;
+        const screenX = w * 0.72;
+        const screenW = 24;
+
+        // 1. 左側：白光平行光源箱
+        anaCtx.fillStyle = '#1e293b';
+        anaCtx.strokeStyle = '#64748b';
+        anaCtx.lineWidth = 2.2;
+        anaCtx.beginPath();
+        anaCtx.roundRect(sourceBoxX, chamberTop - 6, sourceBoxW, chamberH + 12, 12);
+        anaCtx.fill();
+        anaCtx.stroke();
+
+        const srcCenterX = sourceBoxX + sourceBoxW / 2;
+        anaCtx.fillStyle = '#fef08a';
+        anaCtx.font = '900 13px "Noto Sans TC"';
+        anaCtx.textAlign = 'center';
+        anaCtx.fillText(L('白光光源', 'White Light', '白光光源'), srcCenterX, chamberTop + chamberH / 2 - 24);
+        if (currentLang === 'bi') {
+          anaCtx.fillStyle = '#fcd34d';
+          anaCtx.font = '700 11px "Noto Sans TC"';
+          anaCtx.fillText('White Light', srcCenterX, chamberTop + chamberH / 2 - 8);
+        }
+        anaCtx.fillStyle = '#e2e8f0';
+        anaCtx.font = '700 12px "JetBrains Mono"';
+        anaCtx.fillText(L('每色 10 條', '10 Rays/Color', '每色 10 條'), srcCenterX, chamberTop + chamberH / 2 + 12);
+        anaCtx.fillText(L('平行射出 ➔', 'Parallel ➔', '10 Rays ➔'), srcCenterX, chamberTop + chamberH / 2 + 30);
+
+        // 2. 上方：側面 90° 散射光探測器 (動態測量文字寬度，100% 包覆文字不爆框)
+        const topDetText = L(
+          '▲ 側面 90° 探測器 (接收散射光，證明光未消失)',
+          '▲ Side 90° Detector (Detects scattered photons)',
+          '▲ 側面 90° 探測器 Side Detector (接收散射光 Scattered Rays)'
+        );
+        drawAutoBadge(anaCtx, topDetText, chamberLeft + chamberW / 2, 26, {
+          align: 'center',
+          font: '800 12.5px "Noto Sans TC"',
+          textColor: '#67e8f9',
+          bgColor: '#0f172a',
+          borderColor: '#22d3ee',
+          paddingX: 14,
+          height: 30,
+          canvasWidth: w
+        });
+
+        // 3. 中央：低溫元素蒸氣室
+        anaCtx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+        anaCtx.strokeStyle = '#38bdf8';
+        anaCtx.lineWidth = 2.5;
+        anaCtx.beginPath();
+        anaCtx.roundRect(chamberLeft, chamberTop, chamberW, chamberH, 16);
+        anaCtx.fill();
+        anaCtx.stroke();
+
+        const currentElem = ELEMENTS_DATA[currentElementKey];
+        const chamberTitle = L(
+          `低溫${currentElem.zhName}蒸氣室 (吸收特定波長並向四周散射)`,
+          `Cold ${currentElem.enName} Gas Cell (Absorbs & Scatters in 4π)`,
+          `低溫${currentElem.zhName}蒸氣 Cold ${currentElem.enName} Gas (吸收並散射 Scatters)`
+        );
+        anaCtx.fillStyle = '#7dd3fc';
+        anaCtx.font = '900 13.5px "Noto Sans TC"';
+        anaCtx.textAlign = 'center';
+        anaCtx.fillText(chamberTitle, chamberLeft + chamberW / 2, chamberTop - 12);
+
+        // 繪製氣室內的原子與吸收閃光
+        gasAtoms.forEach((atom) => {
+          atom.pulse += 0.04;
+          const padX = Math.min(34, chamberW * 0.12);
+          const ax = chamberLeft + padX + atom.col * ((chamberW - padX * 2) / 5) + Math.sin(atom.pulse) * 2.5;
+          const ay = chamberTop + 32 + atom.row * ((chamberH - 64) / 2) + Math.cos(atom.pulse) * 2.5;
+
+          if (atom.flashTimer > 0) {
+            atom.flashTimer--;
+            anaCtx.save();
+            anaCtx.strokeStyle = atom.flashColor;
+            anaCtx.lineWidth = 2.5;
+            anaCtx.beginPath();
+            anaCtx.arc(ax, ay, 13 + (18 - atom.flashTimer) * 0.8, 0, Math.PI * 2);
+            anaCtx.stroke();
+            anaCtx.restore();
+          }
+
+          anaCtx.fillStyle = '#0369a1';
+          anaCtx.beginPath();
+          anaCtx.arc(ax, ay, 7.5, 0, Math.PI * 2);
+          anaCtx.fill();
+
+          anaCtx.fillStyle = '#e0f2fe';
+          anaCtx.beginPath();
+          anaCtx.arc(ax, ay, 3, 0, Math.PI * 2);
+          anaCtx.fill();
+        });
+
+        // 4. 分光狹縫 (Slit)
+        anaCtx.fillStyle = '#475569';
+        anaCtx.fillRect(slitX - 4, chamberTop - 18, 9, 20);
+        anaCtx.fillRect(slitX - 4, chamberTop + chamberH - 2, 9, 20);
+        anaCtx.strokeStyle = '#94a3b8';
+        anaCtx.setLineDash([5, 5]);
+        anaCtx.beginPath();
+        anaCtx.moveTo(slitX, chamberTop);
+        anaCtx.lineTo(slitX, chamberTop + chamberH);
+        anaCtx.stroke();
+        anaCtx.setLineDash([]);
+
+        anaCtx.fillStyle = '#cbd5e1';
+        anaCtx.font = '800 12.5px "Noto Sans TC"';
+        anaCtx.textAlign = 'center';
+        anaCtx.fillText(L('分光狹縫', 'Slit', '狹縫 Slit'), slitX, chamberTop - 25);
+
+        // 5. 正前方光譜屏幕 (Screen)
+        anaCtx.fillStyle = '#020617';
+        anaCtx.strokeStyle = '#94a3b8';
+        anaCtx.lineWidth = 2;
+        anaCtx.strokeRect(screenX, chamberTop - 8, screenW, chamberH + 16);
+
+        const rainbowGrad = anaCtx.createLinearGradient(screenX, chamberTop, screenX, chamberTop + chamberH);
+        rainbowGrad.addColorStop(0, '#9333ea');
+        rainbowGrad.addColorStop(0.25, '#3b82f6');
+        rainbowGrad.addColorStop(0.5, '#10b981');
+        rainbowGrad.addColorStop(0.75, '#eab308');
+        rainbowGrad.addColorStop(1, '#ef4444');
+        anaCtx.fillStyle = rainbowGrad;
+        anaCtx.fillRect(screenX + 2, chamberTop, screenW - 4, chamberH);
+
+        // 屏幕底部標題 (自動防出界)
+        drawAutoBadge(
+          anaCtx,
+          L('正前方光譜屏幕', 'Spectrum Screen', '光譜屏幕 Screen'),
+          screenX + screenW / 2,
+          chamberTop + chamberH + 28,
+          {
+            align: 'center',
+            font: '800 12.5px "Noto Sans TC"',
+            textColor: '#f8fafc',
+            bgColor: 'rgba(15, 23, 42, 0.9)',
+            borderColor: '#475569',
+            paddingX: 10,
+            height: 26,
+            canvasWidth: w
+          }
+        );
+
+        // 6. 右側屏幕結果膠囊標籤 (使用 drawAutoBadge 強制鎖定在畫布內，絕不裁切！)
+        if (currentRayMode === "nonabsorb" || currentRayMode === "both") {
+          const brightY = chamberTop + chamberH * 0.42;
+          const brightLabel = L(
+            '◀ 10條全到 (明亮)',
+            '◀ 10/10 Arrive (Bright)',
+            '◀ 10條全到 Bright (10/10)'
+          );
+          drawAutoBadge(anaCtx, brightLabel, screenX + screenW + 8, brightY, {
+            align: 'left',
+            font: '900 12.5px "Noto Sans TC"',
+            textColor: '#6ee7b7',
+            bgColor: 'rgba(6, 78, 59, 0.92)',
+            borderColor: '#10b981',
+            paddingX: 10,
+            height: 28,
+            canvasWidth: w
+          });
+        }
+
+        if (currentRayMode === "resonant" || currentRayMode === "both") {
+          const darkY = chamberTop + chamberH * 0.78;
+          // 在彩虹條上畫出明顯黑線
+          anaCtx.fillStyle = '#000000';
+          anaCtx.fillRect(screenX + 1, darkY - 7, screenW - 2, 14);
+          anaCtx.strokeStyle = '#fda4af';
+          anaCtx.lineWidth = 1.2;
+          anaCtx.strokeRect(screenX + 1, darkY - 7, screenW - 2, 14);
+
+          const darkLabel = L(
+            '◀ 僅2條直達 (黑線)',
+            '◀ Only 2 Arrive (Dark Line)',
+            '◀ 僅2條直達 Dark Line (2/10)'
+          );
+          drawAutoBadge(anaCtx, darkLabel, screenX + screenW + 8, darkY, {
+            align: 'left',
+            font: '900 12.5px "Noto Sans TC"',
+            textColor: '#fda4af',
+            bgColor: 'rgba(136, 19, 55, 0.92)',
+            borderColor: '#f43f5e',
+            paddingX: 10,
+            height: 28,
+            canvasWidth: w
+          });
+        }
+
+        // 更新與繪製所有光線粒子
+        let activeCount = 0;
+        rays.forEach(r => {
+          r.update(chamberLeft, chamberRight, screenX + 2);
+          r.draw(anaCtx);
+          if (r.alive) activeCount++;
+        });
+
+        if (activeCount === 0) {
+          autoFireCooldown++;
+          if (autoFireCooldown > 32) {
+            autoFireCooldown = 0;
+            fireTenRays(currentRayMode);
+          }
+        }
+      }
+
+      requestAnimationFrame(renderAnalogyLoop);
+    }
+    requestAnimationFrame(renderAnalogyLoop);
+
+    /* ==========================================================================
+       3. 實驗室光路配置圖 (支援中英對照 + 防止右側文字出界)
+       ========================================================================== */
+    const schCanvas = document.getElementById('schematicCanvas');
+    const schCtx = schCanvas.getContext('2d');
+
+    function resizeSchematic() {
+      if (!schCanvas || schCanvas.clientWidth === 0) return;
+      const dpr = window.devicePixelRatio || 1;
+      schCanvas.width = schCanvas.clientWidth * dpr;
+      schCanvas.height = schCanvas.clientHeight * dpr;
+      schCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resizeSchematic);
+
+    function renderSchematic() {
+      const w = schCanvas.clientWidth;
+      const h = schCanvas.clientHeight;
+      if (w > 0 && h > 0) {
+        schCtx.clearRect(0, 0, w, h);
+
+        const currentElem = ELEMENTS_DATA[currentElementKey];
+        const activeLine = currentElem.lines[selectedLineIndex] || currentElem.lines[0];
+        const midY = h * 0.46;
+
+        if (currentMode === "emission") {
+          const tubeX = w * 0.22;
+          schCtx.fillStyle = '#1e293b';
+          schCtx.strokeStyle = '#eab308';
+          schCtx.lineWidth = 2;
+          schCtx.fillRect(tubeX - 96, midY - 26, 64, 52);
+          schCtx.strokeRect(tubeX - 96, midY - 26, 64, 52);
+
+          schCtx.fillStyle = '#fde047';
+          schCtx.font = '900 12px "Noto Sans TC"';
+          schCtx.textAlign = 'center';
+          schCtx.fillText(L('高壓電源', 'High Voltage', '高壓電 HV'), tubeX - 64, midY - 4);
+          schCtx.fillText('5000 V', tubeX - 64, midY + 14);
+
+          const glow = schCtx.createRadialGradient(tubeX, midY, 4, tubeX, midY, 40);
+          glow.addColorStop(0, activeLine.color);
+          glow.addColorStop(1, 'rgba(0,0,0,0)');
+          schCtx.fillStyle = glow;
+          schCtx.beginPath();
+          schCtx.arc(tubeX, midY, 40, 0, Math.PI * 2);
+          schCtx.fill();
+
+          schCtx.fillStyle = activeLine.color;
+          schCtx.strokeStyle = '#e2e8f0';
+          schCtx.lineWidth = 2;
+          schCtx.fillRect(tubeX - 11, midY - 34, 22, 68);
+          schCtx.strokeRect(tubeX - 11, midY - 34, 22, 68);
+
+          drawAutoBadge(
+            schCtx,
+            L(`${currentElem.zhName}高壓放電管`, `${currentElem.enName} Discharge Tube`, `${currentElem.zhName}放電管 Discharge Tube`),
+            tubeX,
+            midY + 54,
+            { font: '800 12px "Noto Sans TC"', borderColor: '#475569', height: 24, canvasWidth: w }
+          );
+
+          const slitX = w * 0.42;
+          schCtx.fillStyle = '#64748b';
+          schCtx.fillRect(slitX - 3, midY - 42, 6, 34);
+          schCtx.fillRect(slitX - 3, midY + 8, 6, 34);
+          schCtx.fillStyle = '#cbd5e1';
+          schCtx.fillText(L('狹縫', 'Slit', '狹縫 Slit'), slitX, midY - 48);
+
+          const prismX = w * 0.60;
+          schCtx.strokeStyle = activeLine.color;
+          schCtx.lineWidth = 4;
+          schCtx.beginPath();
+          schCtx.moveTo(tubeX + 11, midY);
+          schCtx.lineTo(prismX - 14, midY);
+          schCtx.stroke();
+
+          schCtx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+          schCtx.strokeStyle = '#38bdf8';
+          schCtx.lineWidth = 2.5;
+          schCtx.beginPath();
+          schCtx.moveTo(prismX, midY - 36);
+          schCtx.lineTo(prismX + 32, midY + 30);
+          schCtx.lineTo(prismX - 32, midY + 30);
+          schCtx.closePath();
+          schCtx.fill();
+          schCtx.stroke();
+          schCtx.fillStyle = '#7dd3fc';
+          schCtx.fillText(L('三稜鏡分光', 'Prism', '三稜鏡 Prism'), prismX, midY + 50);
+
+          const screenX = w * 0.80;
+          schCtx.fillStyle = '#020617';
+          schCtx.strokeStyle = '#94a3b8';
+          schCtx.fillRect(screenX, midY - 42, 18, 84);
+          schCtx.strokeRect(screenX, midY - 42, 18, 84);
+
+          currentElem.lines.forEach((l, idx) => {
+            const ly = midY - 28 + idx * 19;
+            schCtx.strokeStyle = l.color;
+            schCtx.lineWidth = 2.2;
+            schCtx.beginPath();
+            schCtx.moveTo(prismX + 14, midY);
+            schCtx.lineTo(screenX, ly);
+            schCtx.stroke();
+
+            schCtx.fillStyle = l.color;
+            schCtx.fillRect(screenX + 2, ly - 2.5, 14, 5);
+          });
+
+          drawAutoBadge(
+            schCtx,
+            L('暗底 + 彩色亮線', 'Bright Lines on Dark', '暗底亮線 Bright Lines'),
+            screenX + 9,
+            midY + 60,
+            { font: '800 12px "Noto Sans TC"', textColor: '#22d3ee', borderColor: '#0891b2', height: 24, canvasWidth: w }
+          );
+
+        } else {
+          const lampX = w * 0.12;
+          schCtx.fillStyle = '#fef08a';
+          schCtx.beginPath();
+          schCtx.arc(lampX, midY, 15, 0, Math.PI * 2);
+          schCtx.fill();
+
+          drawAutoBadge(
+            schCtx,
+            L('高溫白光燈', 'White Light', '白光燈 White Light'),
+            lampX,
+            midY + 48,
+            { font: '800 12px "Noto Sans TC"', borderColor: '#eab308', height: 24, canvasWidth: w }
+          );
+
+          const cellX = w * 0.34;
+          schCtx.strokeStyle = '#ffffff';
+          schCtx.lineWidth = 6;
+          schCtx.beginPath();
+          schCtx.moveTo(lampX + 16, midY);
+          schCtx.lineTo(cellX - 30, midY);
+          schCtx.stroke();
+
+          schCtx.fillStyle = 'rgba(14, 116, 144, 0.3)';
+          schCtx.strokeStyle = '#38bdf8';
+          schCtx.lineWidth = 2.5;
+          schCtx.beginPath();
+          schCtx.roundRect(cellX - 30, midY - 30, 60, 60, 10);
+          schCtx.fill();
+          schCtx.stroke();
+
+          drawAutoBadge(
+            schCtx,
+            L(`低溫${currentElem.zhName}蒸氣`, `Cold ${currentElem.enName} Gas`, `冷${currentElem.zhName}蒸氣 Cold Gas`),
+            cellX,
+            midY + 50,
+            { font: '800 12px "Noto Sans TC"', textColor: '#7dd3fc', borderColor: '#0284c7', height: 24, canvasWidth: w }
+          );
+
+          schCtx.strokeStyle = activeLine.color;
+          schCtx.lineWidth = 2.5;
+          schCtx.beginPath();
+          schCtx.moveTo(cellX, midY);
+          schCtx.lineTo(cellX - 18, midY - 40);
+          schCtx.moveTo(cellX, midY);
+          schCtx.lineTo(cellX + 18, midY - 40);
+          schCtx.stroke();
+
+          const prismX = w * 0.58;
+          schCtx.strokeStyle = '#e2e8f0';
+          schCtx.lineWidth = 4;
+          schCtx.beginPath();
+          schCtx.moveTo(cellX + 30, midY);
+          schCtx.lineTo(prismX - 14, midY);
+          schCtx.stroke();
+
+          schCtx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+          schCtx.strokeStyle = '#38bdf8';
+          schCtx.lineWidth = 2.5;
+          schCtx.beginPath();
+          schCtx.moveTo(prismX, midY - 36);
+          schCtx.lineTo(prismX + 32, midY + 30);
+          schCtx.lineTo(prismX - 32, midY + 30);
+          schCtx.closePath();
+          schCtx.fill();
+          schCtx.stroke();
+          schCtx.fillStyle = '#7dd3fc';
+          schCtx.font = '800 12px "Noto Sans TC"';
+          schCtx.textAlign = 'center';
+          schCtx.fillText(L('三稜鏡分光', 'Prism', '三稜鏡 Prism'), prismX, midY + 50);
+
+          const screenX = w * 0.80;
+          const rainbowGrad = schCtx.createLinearGradient(screenX, midY - 42, screenX, midY + 42);
+          rainbowGrad.addColorStop(0, '#9333ea');
+          rainbowGrad.addColorStop(0.5, '#10b981');
+          rainbowGrad.addColorStop(1, '#ef4444');
+          schCtx.fillStyle = rainbowGrad;
+          schCtx.fillRect(screenX, midY - 42, 18, 84);
+          schCtx.strokeStyle = '#94a3b8';
+          schCtx.strokeRect(screenX, midY - 42, 18, 84);
+
+          currentElem.lines.forEach((l, idx) => {
+            const ly = midY - 28 + idx * 19;
+            schCtx.fillStyle = '#000000';
+            schCtx.fillRect(screenX, ly - 2.5, 18, 5);
+          });
+
+          drawAutoBadge(
+            schCtx,
+            L('彩底 + 吸收黑線', 'Dark Lines on Rainbow', '彩底黑線 Dark Lines'),
+            screenX + 9,
+            midY + 60,
+            { font: '800 12px "Noto Sans TC"', textColor: '#fbbf24', borderColor: '#d97706', height: 24, canvasWidth: w }
+          );
+        }
+      }
+      requestAnimationFrame(renderSchematic);
+    }
+    requestAnimationFrame(renderSchematic);
+
+    /* ==========================================================================
+       4. Three.js 3D 玻爾原子能階模型
+       ========================================================================== */
+    const container = document.getElementById('three-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 16 / 9, 0.1, 1000);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    function resize3D() {
+      if (!container || container.clientWidth === 0) return;
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+    window.addEventListener('resize', resize3D);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.95));
+    const pointLight = new THREE.PointLight(0x38bdf8, 2.2, 120);
+    scene.add(pointLight);
+
+    // 原子核
+    const nucleusGroup = new THREE.Group();
+    const nucleusMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(2.6, 32, 32),
+      new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xb91c1c, emissiveIntensity: 0.8 })
+    );
+    nucleusGroup.add(nucleusMesh);
+    scene.add(nucleusGroup);
+
+    // 能階軌道 n = 1 ~ 6
+    const ORBIT_RADII = { 1: 6, 2: 11.5, 3: 18, 4: 24.5, 5: 31, 6: 37.5 };
+    const orbitLines = {};
+    const orbitGroup = new THREE.Group();
+
+    Object.keys(ORBIT_RADII).forEach(nStr => {
+      const n = parseInt(nStr);
+      const r = ORBIT_RADII[n];
+      const curve = new THREE.EllipseCurve(0, 0, r, r, 0, 2 * Math.PI, false, 0);
+      const points = curve.getPoints(90);
+      const geometry = new THREE.BufferGeometry().setFromPoints(
+        points.map(p => new THREE.Vector3(p.x, 0, p.y))
+      );
+      const material = new THREE.LineBasicMaterial({
+        color: n === 2 ? 0x38bdf8 : 0x475569,
+        transparent: true,
+        opacity: n === 2 ? 0.95 : 0.45
+      });
+      const orbit = new THREE.Line(geometry, material);
+      orbitLines[n] = orbit;
+      orbitGroup.add(orbit);
+    });
+    scene.add(orbitGroup);
+
+    // 電子
+    const electronMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(1.35, 24, 24),
+      new THREE.MeshStandardMaterial({ color: 0x00f0ff, emissive: 0x00d8ff, emissiveIntensity: 1.4 })
+    );
+    scene.add(electronMesh);
+
+    // 光子能量包
+    const photonGroup = new THREE.Group();
+    photonGroup.add(new THREE.Mesh(new THREE.SphereGeometry(1.0, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffffff })));
+    const photonRing = new THREE.Mesh(
+      new THREE.RingGeometry(1.0, 2.1, 24),
+      new THREE.MeshBasicMaterial({ color: 0xff2222, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
+    );
+    photonGroup.add(photonRing);
+    photonGroup.visible = false;
+    scene.add(photonGroup);
+
+    let electronN = 2;
+    let targetN = 2;
+    let electronAngle = 0;
+    let currentOrbitRadius = ORBIT_RADII[2];
+    let isTransitioning = false;
+    let transitionProgress = 0;
+    const transitionDuration = 55;
+    let photonAnimProgress = 0;
+    let photonStartPos = new THREE.Vector3();
+    let photonEndPos = new THREE.Vector3();
+
+    function trigger3DTransition(targetLevel, isAbsorb) {
+      isTransitioning = true;
+      transitionProgress = 0;
+      targetN = targetLevel;
+
+      const activeLine = ELEMENTS_DATA[currentElementKey].lines[selectedLineIndex];
+      photonRing.material.color.set(activeLine.color);
+
+      const statusText = document.getElementById('transition-action-text');
+      const lambdaText = document.getElementById('active-lambda-text');
+      lambdaText.textContent = `${activeLine.wavelength} nm`;
+      lambdaText.style.color = activeLine.color;
+
+      if (isAbsorb) {
+        statusText.innerHTML = `<span class="text-amber-300">${L(
+          `吸收光子躍遷 ↑ (n=${electronN} ➔ n=${targetN})`,
+          `Absorb Photon ↑ (n=${electronN} ➔ n=${targetN})`,
+          `吸收躍遷 Absorb ↑ (n=${electronN}➔${targetN})`
+        )}</span>`;
+        photonStartPos.set(Math.cos(electronAngle) * 52, 12, Math.sin(electronAngle) * 52);
+        photonGroup.position.copy(photonStartPos);
+        photonGroup.visible = true;
+        photonAnimProgress = 0;
+      } else {
+        statusText.innerHTML = `<span class="text-cyan-300">${L(
+          `釋放光子躍遷 ↓ (n=${electronN} ➔ n=${targetN})`,
+          `Emit Photon ↓ (n=${electronN} ➔ n=${targetN})`,
+          `發射躍遷 Emit ↓ (n=${electronN}➔${targetN})`
+        )}</span>`;
+      }
+    }
+
+    document.getElementById('btn-replay-transition').addEventListener('click', () => {
+      selectSpectralLine(selectedLineIndex, true);
+    });
+
+    // 3D 滑鼠控制
+    let isDragging = false;
+    let prevMouse = { x: 0, y: 0 };
+    let camSpherical = { radius: 70, theta: Math.PI / 4, phi: Math.PI / 3 };
+
+    function updateCamera() {
+      camera.position.x = camSpherical.radius * Math.sin(camSpherical.phi) * Math.sin(camSpherical.theta);
+      camera.position.y = camSpherical.radius * Math.cos(camSpherical.phi);
+      camera.position.z = camSpherical.radius * Math.sin(camSpherical.phi) * Math.cos(camSpherical.theta);
+      camera.lookAt(0, 0, 0);
+    }
+    updateCamera();
+
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      prevMouse = { x: e.clientX, y: e.clientY };
+    });
+    window.addEventListener('mouseup', () => isDragging = false);
+    container.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      camSpherical.theta -= (e.clientX - prevMouse.x) * 0.008;
+      camSpherical.phi = Math.max(0.15, Math.min(Math.PI / 2 - 0.05, camSpherical.phi - (e.clientY - prevMouse.y) * 0.008));
+      updateCamera();
+      prevMouse = { x: e.clientX, y: e.clientY };
+    });
+    container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      camSpherical.radius = Math.max(32, Math.min(115, camSpherical.radius + e.deltaY * 0.05));
+      updateCamera();
+    }, { passive: false });
+
+    document.getElementById('reset-cam-btn').addEventListener('click', () => {
+      camSpherical = { radius: 70, theta: Math.PI / 4, phi: Math.PI / 3 };
+      updateCamera();
+    });
+
+    /* ==========================================================================
+       5. 光譜對照條與全頁雙語 UI 更新邏輯
+       ========================================================================== */
+    function applyLanguageUI() {
+      // 頂部標題與導航
+      document.querySelector('h1').textContent = L(
+        '原子光譜與能階躍遷實驗室',
+        'Atomic Spectra & Energy Levels Lab',
+        '原子光譜與能階實驗室 Atomic Spectra Lab'
+      );
+      document.querySelector('header p').innerHTML = L(
+        '發射光譜 (暗底亮線) vs 吸收光譜 (彩底黑線) &bull; 「10 條光線散射」微觀機制',
+        'Emission (Bright Lines) vs Absorption (Dark Lines) &bull; 10-Ray Scattering Mechanism',
+        '發射光譜 (Emission) vs 吸收光譜 (Absorption) &bull; 10 條光線散射比喻 (10-Ray Scattering)'
+      );
+      document.getElementById('tab-btn-analogy').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> ${L(
+        '1. 吸收光譜：10 條光線散射',
+        '1. Absorption: 10-Ray Scattering',
+        '1. 散射比喻 10-Ray Scattering'
+      )}`;
+      document.getElementById('tab-btn-3d').innerHTML = `<i class="fa-solid fa-cube"></i> ${L(
+        '2. 3D 玻爾能階與實驗光路',
+        '2. 3D Bohr Model & Setup',
+        '2. 3D 能階與光路 Bohr & Setup'
+      )}`;
+
+      // 元素按鈕文字
+      document.querySelectorAll('.elem-btn').forEach(btn => {
+        const key = btn.dataset.element;
+        const elData = ELEMENTS_DATA[key];
+        btn.textContent = L(elData.btnZh, elData.btnEn, elData.btnZh);
+      });
+
+      // 分頁 1：10條光線比喻文字
+      document.getElementById('ui-analogy-badge').textContent = L('核心比喻', 'Key Analogy', '核心比喻 Key Analogy');
+      document.getElementById('ui-analogy-title').textContent = L(
+        '為什麼白光穿過蒸氣後，特定顏色會出現「黑線」？',
+        'Why do Dark Lines appear when white light passes through cold gas?',
+        '為什麼白光穿過蒸氣後，特定顏色會出現「黑線 (Dark Lines)」？'
+      );
+      document.getElementById('ui-analogy-desc').innerHTML = L(
+        '假設白光中<strong class="text-white underline decoration-cyan-400">每種顏色都有 10 條光線</strong>筆直向前射出，看看穿過低溫蒸氣時發生什麼事：',
+        'Suppose white light has <strong class="text-white underline decoration-cyan-400">10 parallel rays per color</strong>. Watch what happens inside the cold gas:',
+        '假設白光中<strong class="text-white underline decoration-cyan-400">每種顏色都有 10 條光線 (10 Rays per Color)</strong>筆直向前射出，觀察穿過低溫蒸氣時的變化：'
+      );
+
+      document.getElementById('ui-btn-nonabsorb').textContent = L('10 條非吸收光 (綠光)', '10 Non-absorbed Rays (Green)', '10 條非吸收光 (綠光 Non-absorbed)');
+      document.getElementById('ui-btn-resonant').textContent = L('10 條特徵吸收光', '10 Resonant Rays (Absorbed)', '10 條特徵吸收光 (Resonant)');
+      document.getElementById('ui-btn-both').textContent = L('同時發射對比 (白光混合)', 'Fire Both (Compare)', '同時發射對比 (Compare Both)');
+
+      document.getElementById('ui-stat1-title').textContent = L('左方入射平行光束', 'Incident Parallel Beam', '入射平行光束 Incident Rays');
+      document.getElementById('ui-stat1-unit').textContent = L('條直行', 'Rays', '條直行 Rays');
+      document.getElementById('ui-stat2-title').innerHTML = `<i class="fa-solid fa-arrows-up-down-left-right"></i> ${L('氣室吸收後向四周散射', 'Absorbed & Scattered (4π)', '氣室吸收後散射 Scattered (4π)')}`;
+      document.getElementById('ui-stat2-sub').textContent = L('向四面八方隨機重發', 'Re-emitted in all directions', '向四面八方重發 Re-emitted All Directions');
+      document.getElementById('ui-stat2-unit').textContent = L('條轉向', 'Deflected', '條轉向 Deflected');
+      document.getElementById('ui-stat3-title').innerHTML = `<i class="fa-solid fa-bullseye"></i> ${L('筆直穿過狹縫到達屏幕', 'Direct to Front Screen', '直達正前方屏幕 Direct to Screen')}`;
+      document.getElementById('ui-stat3-unit').textContent = L('條直達', 'Arrived', '條直達 Arrived');
+
+      document.getElementById('ui-box-green-title').innerHTML = `<span class="w-3.5 h-3.5 rounded-full bg-emerald-400 inline-block shrink-0"></span> ${L(
+        '非吸收顏色光線 (能量不吻合能階差 hf ≠ ΔE)',
+        'Non-absorbed Wavelengths (hf ≠ ΔE)',
+        '非吸收顏色 Non-absorbed Color (hf ≠ ΔE)'
+      )}`;
+      document.getElementById('ui-box-green-desc').innerHTML = L(
+        '氣體原子「不感興趣」，<strong class="text-emerald-300 font-black">10 條光線 ➔ 10 條全部筆直穿過</strong>氣室到達正前方屏幕，因此背景維持明亮的連續彩虹色帶。',
+        'Gas atoms do not absorb these photons. <strong class="text-emerald-300 font-black">All 10 rays pass straight through</strong> to the screen, forming a bright continuous background.',
+        '氣體原子不吸收，<strong class="text-emerald-300 font-black">10 條光線 ➔ 10 條全部筆直穿過 (All 10 pass straight through)</strong> 到達正前方屏幕，形成明亮的連續彩虹背景 (Bright Continuous Background)。'
+      );
+
+      document.getElementById('ui-box-red-title').innerHTML = `<span class="w-3.5 h-3.5 rounded-full bg-rose-500 inline-block shrink-0"></span> ${L(
+        '特徵吸收顏色光線 (能量吻合能階差 hf = ΔE)',
+        'Resonant Absorbed Wavelengths (hf = ΔE)',
+        '特徵吸收顏色 Absorbed Color (hf = ΔE)'
+      )}`;
+      document.getElementById('ui-box-red-desc').innerHTML = L(
+        '原子吸收光子後雖會重新放出，但會<strong class="text-amber-300 font-black">向四面八方隨機散射</strong>！原本直行的 <strong class="text-rose-300 font-black">10 條光線驟減至 2 條</strong>，因此出現<strong class="text-white underline decoration-rose-400">吸收黑線 (暗線)</strong>！',
+        'Atoms absorb and re-emit photons <strong class="text-amber-300 font-black">randomly in all directions (scattering)</strong>! Forward rays drop from <strong class="text-rose-300 font-black">10 to only 2</strong>, leaving a <strong class="text-white underline decoration-rose-400">Dark Absorption Line</strong>!',
+        '原子吸收光子後<strong class="text-amber-300 font-black">向四面八方隨機散射 (Scattered in all directions)</strong>！原本直行的 <strong class="text-rose-300 font-black">10 條光線驟減至 2 條</strong>，正前方強度大減，形成<strong class="text-white underline decoration-rose-400">吸收黑線 (Dark Absorption Line)</strong>！'
+      );
+
+      // 分頁 2：3D 模型與實驗光路
+      document.getElementById('ui-setup-header').textContent = L('實驗室光路配置：', 'Experimental Setup: ', '實驗光路 Setup: ');
+      document.getElementById('setup-title').textContent = currentMode === "emission"
+        ? L('高壓放電管 (發射光譜)', 'High-Voltage Discharge Tube (Emission)', '高壓放電管 Discharge Tube (發射 Emission)')
+        : L('白光穿過冷蒸氣 (吸收光譜)', 'White Light + Cold Gas (Absorption)', '白光穿過冷蒸氣 Cold Gas (吸收 Absorption)');
+      document.getElementById('ui-btn-mode-em').textContent = L('高壓電激發氣體 (發射光譜)', 'Hot Gas Discharge (Emission)', '高壓電激發氣體 (發射 Emission)');
+      document.getElementById('ui-btn-mode-ab').textContent = L('白光穿過冷蒸氣 (吸收光譜)', 'White Light + Cold Gas (Absorption)', '白光穿過冷蒸氣 (吸收 Absorption)');
+      document.getElementById('ui-bohr-title').textContent = L('3D 玻爾原子能階躍遷模型', '3D Bohr Atomic Energy Level Model', '3D 玻爾原子能階模型 (Bohr Model)');
+      document.getElementById('ui-btn-replay').textContent = L('重播能階躍遷', 'Replay Transition', '重播躍遷 Replay');
+      document.getElementById('ui-btn-resetcam').textContent = L('重置視角', 'Reset View', '重置 Reset');
+      document.getElementById('ui-hud-orbit').textContent = L('目前電子軌道：', 'Current Orbit:', '目前軌道 Orbit:');
+      document.getElementById('ui-hud-process').textContent = L('物理過程：', 'Process:', '物理過程 Process:');
+      document.getElementById('ui-hud-lambda').textContent = L('光子波長 (λ)：', 'Wavelength (λ):', '光子波長 Wavelength (λ):');
+      document.getElementById('ui-3d-hint').textContent = L(
+        '按住滑鼠拖曳可 360° 旋轉原子軌道 • 滾輪縮放',
+        'Drag to rotate 360° • Scroll to zoom',
+        '按住滑鼠拖曳 360° 旋轉軌道 • 滾輪縮放 (Drag to Rotate • Scroll to Zoom)'
+      );
+
+      // 右側：三大光譜尺與公式卡
+      document.getElementById('ui-spec-header').textContent = L('三大光譜垂直對照尺', 'Spectra Comparison Bars', '三大光譜對照尺 Spectra Comparison');
+      document.getElementById('ui-spec-hint').innerHTML = `<i class="fa-solid fa-hand-pointer mr-1"></i>${L('點擊譜線切換波長', 'Click Line to Select', '點擊譜線切換 Click Line')}`;
+
+      document.getElementById('ui-spec1-title').innerHTML = `<span class="w-3 h-3 rounded-full bg-amber-400 shadow shrink-0"></span> ${L(
+        '1. 連續光譜 (高溫白光)',
+        '1. Continuous Spectrum (White Light)',
+        '1. 連續光譜 Continuous Spectrum (高溫白光)'
+      )}`;
+      document.getElementById('ui-spec1-badge').textContent = L('所有顏色齊全 (各 10 條)', 'All Wavelengths Present', '所有顏色齊全 All Wavelengths');
+
+      document.getElementById('ui-spec2-title').innerHTML = `<span class="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee] shrink-0"></span> ${L(
+        '2. 發射光譜 (高壓電激發氣體)',
+        '2. Line Emission Spectrum (Hot Gas)',
+        '2. 發射光譜 Line Emission Spectrum (高壓放電管)'
+      )}`;
+      document.getElementById('ui-spec2-badge').textContent = L('全黑背景 ＋ 彩色亮線', 'Bright Lines on Dark Background', '暗底亮線 Bright Lines on Dark');
+
+      document.getElementById('ui-spec3-title').innerHTML = `<span class="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_10px_#f43f5e] shrink-0"></span> ${L(
+        '3. 吸收光譜 (白光穿過冷蒸氣)',
+        '3. Line Absorption Spectrum (Cold Gas)',
+        '3. 吸收光譜 Line Absorption Spectrum (白光穿過冷蒸氣)'
+      )}`;
+      document.getElementById('ui-spec3-badge').textContent = L('彩虹背景 ＋ 散射缺失黑線', 'Dark Lines on Continuous Background', '彩底黑線 Dark Lines on Rainbow');
+
+      document.getElementById('ui-quick-line-title').innerHTML = `<i class="fa-solid fa-fingerprint text-cyan-400"></i> ${L(
+        '點擊切換該元素的特徵譜線 (能階指紋)：',
+        'Click to Select Characteristic Spectral Line:',
+        '點擊切換特徵譜線 Select Characteristic Spectral Line:'
+      )}`;
+
+      document.getElementById('ui-param-header').innerHTML = `<i class="fa-solid fa-crosshairs text-cyan-400"></i> ${L('當前選中譜線參數', 'Selected Line Parameters', '選中譜線參數 Selected Line Data')}`;
+      document.getElementById('ui-param-wl').textContent = L('波長 (λ)', 'Wavelength (λ)', '波長 Wavelength (λ)');
+      document.getElementById('ui-param-de').textContent = L('光子能量 (ΔE)', 'Photon Energy (ΔE)', '光子能量 Energy (ΔE)');
+      document.getElementById('ui-param-tr').textContent = L('對應能階躍遷', 'Energy Transition', '能階躍遷 Transition');
+
+      // 記憶口訣與公式卡
+      document.getElementById('ui-memo-title').textContent = L(
+        '課堂核心口訣：為什麼亮線與黑線位置完全一樣？',
+        'Key Concept: Why are Emission & Absorption lines at identical positions?',
+        '課堂核心總結：為什麼亮線與黑線位置完全相同 (Identical Wavelengths)？'
+      );
+      document.getElementById('ui-memo-em-tag').textContent = L('發射', 'Emission', '發射 Emission');
+      document.getElementById('ui-memo-em-desc').innerHTML = L(
+        '高壓電激發使電子「<strong class="text-white">由高能階跌回低能階</strong>」，向外釋放特定能量的光子 <span class="inline-flex items-center px-2 py-0.5 mx-1 rounded bg-cyan-500/20 text-cyan-300 font-black">➔ 暗底出亮線</span>',
+        'Excited electrons jump from <strong class="text-white">High to Low energy level</strong>, emitting photons of specific energy <span class="inline-flex items-center px-2 py-0.5 mx-1 rounded bg-cyan-500/20 text-cyan-300 font-black">➔ Bright Lines on Dark</span>',
+        '高壓電激發使電子「<strong class="text-white">由高能階跌回低能階 (High ➔ Low Level)</strong>」，向外釋放特定能量光子 <span class="inline-flex items-center px-2 py-0.5 mx-1 rounded bg-cyan-500/20 text-cyan-300 font-black">➔ 暗底出亮線 (Bright Lines)</span>'
+      );
+
+      document.getElementById('ui-memo-ab-tag').textContent = L('吸收', 'Absorption', '吸收 Absorption');
+      document.getElementById('ui-memo-ab-desc').innerHTML = L(
+        '電子「<strong class="text-white">由低能階跳上高能階</strong>」，只挑能量吻合的光子吸收並向四周散射，令直行光由 10 條減至 2 條 <span class="inline-flex items-center px-2 py-0.5 mx-1 rounded bg-amber-500/20 text-amber-300 font-black">➔ 彩底出黑線</span>',
+        'Electrons jump from <strong class="text-white">Low to High energy level</strong> by absorbing exact-energy photons & scattering them in 4π (10 rays drop to 2) <span class="inline-flex items-center px-2 py-0.5 mx-1 rounded bg-amber-500/20 text-amber-300 font-black">➔ Dark Lines on Rainbow</span>',
+        '電子「<strong class="text-white">由低能階跳上高能階 (Low ➔ High Level)</strong>」，吸收特定能量光子並向四周散射，直行光由 10 條減至 2 條 <span class="inline-flex items-center px-2 py-0.5 mx-1 rounded bg-amber-500/20 text-amber-300 font-black">➔ 彩底出黑線 (Dark Lines)</span>'
+      );
+
+      document.getElementById('ui-formula-label').textContent = L(
+        '能階差與光子波長公式',
+        'Bohr Frequency Condition & Photon Energy',
+        '能階差與光子波長公式 (Photon Energy & Wavelength)'
+      );
+      document.getElementById('ui-formula-footer').innerHTML = L(
+        '因為同一種元素的能階差 <span class="font-serif italic font-black text-white">&Delta;E</span> 固定，所以發射亮線與吸收黑線的波長 <span class="font-serif italic font-black text-white">&lambda;</span> 必然一模一樣！',
+        'Since each element has unique discrete energy levels (<span class="font-serif italic font-black text-white">&Delta;E</span>), its emission and absorption wavelengths (<span class="font-serif italic font-black text-white">&lambda;</span>) are identical!',
+        '因為同一種元素的能階差 <span class="font-serif italic font-black text-white">&Delta;E</span> 固定 (Discrete Energy Levels)，所以發射亮線與吸收黑線的波長 <span class="font-serif italic font-black text-white">&lambda;</span> 必然一模一樣！'
+      );
+
+      renderMathFormulas();
+      updateSpectralBars();
+      const activeLine = ELEMENTS_DATA[currentElementKey].lines[selectedLineIndex];
+      updateAnalogyHUD(currentRayMode, activeLine);
+      const badge = document.getElementById('spectral-color-badge');
+      badge.textContent = `${getLineDisplayName(activeLine)} (${activeLine.wavelength} nm)`;
+    }
+
+    // 綁定語言切換按鈕
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.lang-btn').forEach(b => {
+          b.className = 'lang-btn px-3 py-1.5 text-xs md:text-sm font-extrabold rounded-xl transition-all text-slate-300 hover:text-white';
+        });
+        btn.className = 'lang-btn px-3 py-1.5 text-xs md:text-sm font-extrabold rounded-xl transition-all bg-gradient-to-r from-cyan-400 to-sky-500 text-slate-950 shadow';
+        currentLang = btn.dataset.lang;
+        applyLanguageUI();
+      });
+    });
+
+    function updateSpectralBars() {
+      const currentElem = ELEMENTS_DATA[currentElementKey];
+      const emissionContainer = document.getElementById('emission-spectrum-lines');
+      const absorptionContainer = document.getElementById('absorption-spectrum-lines');
+      const quickBtnsContainer = document.getElementById('spectral-quick-buttons');
+
+      emissionContainer.innerHTML = '';
+      absorptionContainer.innerHTML = '';
+      quickBtnsContainer.innerHTML = '';
+
+      document.getElementById('current-atom-label').textContent = `${getElemDisplayName(currentElem)} (${currentElem.symbol})`;
+
+      currentElem.lines.forEach((line, index) => {
+        const percent = ((line.wavelength - 380) / (750 - 380)) * 100;
+        const isSelected = index === selectedLineIndex;
+
+        const emLine = document.createElement('div');
+        emLine.className = `absolute top-0 bottom-0 transition-all ${isSelected ? 'z-20 scale-y-105' : 'opacity-90'}`;
+        emLine.style.left = `calc(${percent}% - 2.5px)`;
+        emLine.style.width = isSelected ? '6px' : '4.5px';
+        emLine.style.backgroundColor = line.color;
+        emLine.style.boxShadow = isSelected
+          ? `0 0 16px ${line.color}, 0 0 6px #ffffff`
+          : `0 0 10px ${line.color}`;
+        emissionContainer.appendChild(emLine);
+
+        const abLine = document.createElement('div');
+        abLine.className = `absolute top-0 bottom-0 transition-all ${isSelected ? 'z-20' : ''}`;
+        abLine.style.left = `calc(${percent}% - 2.5px)`;
+        abLine.style.width = isSelected ? '6px' : '4.5px';
+        abLine.style.backgroundColor = '#000000';
+        if (isSelected) {
+          abLine.style.outline = '2px solid rgba(255,255,255,0.85)';
+        }
+        absorptionContainer.appendChild(abLine);
+
+        const btn = document.createElement('button');
+        btn.className = `px-3 py-2 rounded-xl text-xs md:text-sm font-mono font-extrabold transition-all flex items-center justify-between border-2 ${
+          isSelected
+            ? 'bg-slate-800 text-white border-cyan-400 shadow-lg shadow-cyan-500/20'
+            : 'bg-slate-950/90 text-slate-300 border-slate-800 hover:border-slate-600 hover:text-white'
+        }`;
+        btn.innerHTML = `
+          <span class="flex items-center gap-2 font-sans truncate">
+            <span class="w-3 h-3 rounded-full shrink-0" style="background:${line.color}; box-shadow: 0 0 8px ${line.color}"></span>
+            <span class="truncate">${getLineDisplayName(line)}</span>
+          </span>
+          <span class="text-xs text-slate-400 shrink-0 ml-1">${line.wavelength}nm</span>
+        `;
+        btn.addEventListener('click', () => selectSpectralLine(index, true));
+        quickBtnsContainer.appendChild(btn);
+      });
+    }
+
+    function selectSpectralLine(index, autoTrigger = true) {
+      selectedLineIndex = index;
+      updateSpectralBars();
+
+      const currentElem = ELEMENTS_DATA[currentElementKey];
+      const line = currentElem.lines[index];
+
+      document.getElementById('detail-wavelength').textContent = `${line.wavelength.toFixed(1)} nm`;
+      document.getElementById('detail-wavelength').style.color = line.color;
+      document.getElementById('detail-energy').textContent = `${line.energy.toFixed(2)} eV`;
+      document.getElementById('detail-transition').textContent = `n=${line.fromN} ↔ n=${line.toN}`;
+
+      const badge = document.getElementById('spectral-color-badge');
+      badge.textContent = `${getLineDisplayName(line)} (${line.wavelength} nm)`;
+      badge.style.backgroundColor = line.color;
+      badge.style.color = '#020617';
+
+      Object.keys(orbitLines).forEach(nStr => {
+        const n = parseInt(nStr);
+        if (n === line.fromN || n === line.toN) {
+          orbitLines[n].material.color.setHex(0x38bdf8);
+          orbitLines[n].material.opacity = 0.95;
+        } else {
+          orbitLines[n].material.color.setHex(0x334155);
+          orbitLines[n].material.opacity = 0.35;
+        }
+      });
+
+      fireTenRays(currentRayMode);
+
+      if (autoTrigger) {
+        if (currentMode === "emission") {
+          electronN = line.fromN;
+          currentOrbitRadius = ORBIT_RADII[electronN];
+          trigger3DTransition(line.toN, false);
+        } else {
+          electronN = line.toN;
+          currentOrbitRadius = ORBIT_RADII[electronN];
+          trigger3DTransition(line.fromN, true);
+        }
+      }
+    }
+
+    // 元素切換按鈕
+    document.querySelectorAll('.elem-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.elem-btn').forEach(b => {
+          b.className = 'elem-btn px-3 py-1.5 text-sm md:text-base font-extrabold rounded-xl transition-all bg-slate-800 text-slate-300 hover:bg-slate-700';
+        });
+        btn.className = 'elem-btn px-3 py-1.5 text-sm md:text-base font-extrabold rounded-xl transition-all bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30';
+        currentElementKey = btn.dataset.element;
+        selectedLineIndex = 0;
+        selectSpectralLine(0, true);
+      });
+    });
+
+    // 發射 / 吸收實驗模式切換
+    const btnModeEmission = document.getElementById('btn-mode-emission');
+    const btnModeAbsorption = document.getElementById('btn-mode-absorption');
+    const setupTitle = document.getElementById('setup-title');
+
+    btnModeEmission.addEventListener('click', () => {
+      currentMode = "emission";
+      btnModeEmission.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 ring-2 ring-indigo-400';
+      btnModeAbsorption.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold bg-slate-800 text-slate-300 hover:bg-slate-700';
+      setupTitle.textContent = L('高壓放電管 (發射光譜)', 'High-Voltage Discharge Tube (Emission)', '高壓放電管 Discharge Tube (發射 Emission)');
+      setupTitle.className = "text-cyan-300";
+      selectSpectralLine(selectedLineIndex, true);
+    });
+
+    btnModeAbsorption.addEventListener('click', () => {
+      currentMode = "absorption";
+      btnModeAbsorption.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/30 ring-2 ring-amber-300';
+      btnModeEmission.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs md:text-sm font-extrabold bg-slate-800 text-slate-300 hover:bg-slate-700';
+      setupTitle.textContent = L('白光穿過冷蒸氣 (吸收光譜)', 'White Light + Cold Gas (Absorption)', '白光穿過冷蒸氣 Cold Gas (吸收 Absorption)');
+      setupTitle.className = "text-amber-300";
+      selectSpectralLine(selectedLineIndex, true);
+    });
+
+    // 主視圖分頁切換 (10條光線比喻 vs 3D玻爾模型)
+    const tabBtnAnalogy = document.getElementById('tab-btn-analogy');
+    const tabBtn3D = document.getElementById('tab-btn-3d');
+    const viewAnalogy = document.getElementById('view-scattering-analogy');
+    const view3D = document.getElementById('view-3d-model');
+
+    tabBtnAnalogy.addEventListener('click', () => {
+      tabBtnAnalogy.className = 'px-4 py-2.5 rounded-xl text-sm md:text-base font-extrabold transition-all flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 shadow-lg shadow-amber-500/25';
+      tabBtn3D.className = 'px-4 py-2.5 rounded-xl text-sm md:text-base font-extrabold transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800/70';
+      viewAnalogy.classList.remove('hidden');
+      view3D.classList.add('hidden');
+      setTimeout(resizeAnalogyCanvas, 20);
+    });
+
+    tabBtn3D.addEventListener('click', () => {
+      tabBtn3D.className = 'px-4 py-2.5 rounded-xl text-sm md:text-base font-extrabold transition-all flex items-center gap-2 bg-gradient-to-r from-cyan-400 to-indigo-500 text-slate-950 shadow-lg shadow-cyan-500/25';
+      tabBtnAnalogy.className = 'px-4 py-2.5 rounded-xl text-sm md:text-base font-extrabold transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800/70';
+      view3D.classList.remove('hidden');
+      view3D.classList.add('flex');
+      viewAnalogy.classList.add('hidden');
+      setTimeout(() => {
+        resizeSchematic();
+        resize3D();
+        selectSpectralLine(selectedLineIndex, true);
+      }, 20);
+    });
+
+    // 點擊光譜條自動吸附最近譜線
+    function handleSpectrumBarClick(event, containerId) {
+      const rect = document.getElementById(containerId).getBoundingClientRect();
+      const clickPercent = (event.clientX - rect.left) / rect.width;
+      const clickWavelength = 380 + clickPercent * (750 - 380);
+
+      const lines = ELEMENTS_DATA[currentElementKey].lines;
+      let closestIdx = 0;
+      let minDiff = 9999;
+      lines.forEach((l, idx) => {
+        const diff = Math.abs(l.wavelength - clickWavelength);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestIdx = idx;
+        }
+      });
+      selectSpectralLine(closestIdx, true);
+    }
+
+    document.getElementById('emission-bar-container').addEventListener('click', (e) => handleSpectrumBarClick(e, 'emission-bar-container'));
+    document.getElementById('absorption-bar-container').addEventListener('click', (e) => handleSpectrumBarClick(e, 'absorption-bar-container'));
+
+    /* ==========================================================================
+       6. Three.js 3D 動畫主迴圈
+       ========================================================================== */
+    function animate() {
+      requestAnimationFrame(animate);
+
+      nucleusGroup.rotation.y += 0.01;
+      electronAngle += 0.035 / Math.sqrt(currentOrbitRadius / 6);
+
+      if (isTransitioning) {
+        transitionProgress++;
+        const t = Math.min(1.0, transitionProgress / transitionDuration);
+        const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+        const startRadius = ORBIT_RADII[electronN];
+        const endRadius = ORBIT_RADII[targetN];
+        currentOrbitRadius = startRadius + (endRadius - startRadius) * ease;
+
+        if (targetN > electronN) {
+          photonAnimProgress = Math.min(1.0, transitionProgress / (transitionDuration * 0.6));
+          photonGroup.position.lerpVectors(
+            photonStartPos,
+            new THREE.Vector3(Math.cos(electronAngle) * currentOrbitRadius, 0, Math.sin(electronAngle) * currentOrbitRadius),
+            photonAnimProgress
+          );
+          if (photonAnimProgress >= 1.0) photonGroup.visible = false;
+        } else {
+          if (transitionProgress >= transitionDuration * 0.4) {
+            if (!photonGroup.visible) {
+              photonGroup.visible = true;
+              photonStartPos.set(Math.cos(electronAngle) * currentOrbitRadius, 0, Math.sin(electronAngle) * currentOrbitRadius);
+              photonEndPos.set(Math.cos(electronAngle + 0.5) * 60, 14, Math.sin(electronAngle + 0.5) * 60);
+              photonAnimProgress = 0;
+            }
+            photonAnimProgress += 0.04;
+            photonGroup.position.lerpVectors(photonStartPos, photonEndPos, Math.min(1.0, photonAnimProgress));
+            if (photonAnimProgress >= 1.0) photonGroup.visible = false;
+          }
+        }
+
+        if (transitionProgress >= transitionDuration) {
+          isTransitioning = false;
+          electronN = targetN;
+          currentOrbitRadius = ORBIT_RADII[electronN];
+          document.getElementById('electron-state-text').textContent = `n = ${electronN}`;
+        }
+      }
+
+      electronMesh.position.x = Math.cos(electronAngle) * currentOrbitRadius;
+      electronMesh.position.z = Math.sin(electronAngle) * currentOrbitRadius;
+      photonRing.lookAt(camera.position);
+
+      renderer.render(scene, camera);
+    }
+
+    window.onload = function() {
+      applyLanguageUI();
+      resizeAnalogyCanvas();
+      selectSpectralLine(0, false);
+      fireTenRays("both");
+      animate();
+    };
+  </script>
+</body>
+</html>
